@@ -82,3 +82,22 @@ PyTorch. No cloud dependency.
 
 Track every open-source tool + license here (COLMAP, 3DGS reference impl, Three.js,
 Vite, etc.) for the originality/attribution requirement.
+
+## Feed-forward backend — VGGT (self-hosted)
+
+For fast, SfM-free reconstruction from casual/unposed video we self-host **VGGT**
+(facebook/VGGT-1B, CVPR 2025 — open-source, credited). One forward pass gives
+posed, colored 3D points; no COLMAP, any camera trajectory, seconds.
+
+```bash
+python reconstruction/pipeline/run_vggt.py \
+    --images data/processed/<id>/images --out out.glb --num-frames 16
+# or straight from a video:
+python reconstruction/pipeline/run_vggt.py --video data/raw/room.mp4 --out out.glb
+```
+
+Output is a `.glb` point cloud the viewer loads directly (`assets.mesh` + auto-frame),
+so it drops in with a 3-line `scene.json`. Verified end-to-end on a 4 GB RTX 2050
+(8 frames, ~1 M points); use more frames on a bigger GPU (Colab T4) for denser,
+cleaner results. This is the speed/robustness half of the dual-path architecture
+(see `architecture.md`); COLMAP + Brush 3DGS remains the photorealistic half.
