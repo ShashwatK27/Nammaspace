@@ -25,8 +25,22 @@ export async function loadScene(sceneUrl) {
 
   const assets = config.assets || {};
   if (assets.mesh) {
+    // Handles both meshes and point-cloud GLBs (e.g. VGGT output). Style any
+    // Points so they're visible, and count them.
     const gltf = await new GLTFLoader().loadAsync(baseUrl + assets.mesh);
+    let pts = 0;
+    gltf.scene.traverse((o) => {
+      if (o.isPoints) {
+        pts += o.geometry?.getAttribute('position')?.count || 0;
+        o.material = new THREE.PointsMaterial({
+          size: 2.0, sizeAttenuation: false, color: 0xffffff,
+          vertexColors: !!o.geometry?.getAttribute('color'),
+        });
+      }
+    });
     root.add(gltf.scene);
+    debug.splatCount = pts || 'mesh';
+    console.log('[sceneLoader] mesh/points loaded; points =', pts);
   } else if (assets.splat) {
     // True Gaussian-splat rendering via mkkellogg DropInViewer. Critical setting:
     // gpuAcceleratedSort:false — the GPU sort silently fails on ANGLE/D3D11
@@ -50,6 +64,30 @@ export async function loadScene(sceneUrl) {
     } catch (e) { debug.splatError = String(e); console.error('[sceneLoader] splat load failed', e); }
   } else {
     root.add(buildPlaceholderRoom(config));
+  }
+
+  // Auto-frame: if scene.json has no bounds/spawn (e.g. a raw VGGT/InstantSplat
+  // drop-in with no COLMAP step), derive them from the loaded geometry so free-roam
+  // works out of the box. (Splat scenes carry bounds from build_scene already.)
+  if (!config.bounds) {
+    const box = new THREE.Box3().setFromObject(root);
+    if (!box.isEmpty() && isFinite(box.min.x)) {
+      const size = box.getSize(new THREE.Vector3());
+      const c = box.getCenter(new THREE.Vector3());
+      config.bounds = { min: box.min.toArray(), max: box.max.toArray() };
+      if (!config.spawn) {
+        config.spawn = { position: [c.x, c.y, box.max.z + size.z * 0.15], yaw: 0 };
+      }
+      if (!config.player) {
+        config.player = {
+          eyeHeight: config.spawn.position[1],
+          walkSpeed: Math.max(0.5, size.length() / 8),
+          sprintMultiplier: 2.2,
+          flyVertical: true,
+        };
+      }
+      console.log('[sceneLoader] auto-framed bounds', config.bounds, 'spawn', config.spawn.position);
+    }
   }
 
   // Reference gizmos (red bounds box + origin axes) — off by default, shown with
