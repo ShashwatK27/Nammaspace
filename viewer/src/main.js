@@ -19,9 +19,10 @@ console.error = (...a) => { logErr('console', a.map(String).join(' ')); _cerr(..
 const _cwarn = console.warn.bind(console);
 console.warn = (...a) => { logErr('warn', a.map(String).join(' ')); _cwarn(...a); };
 
-// Which scene bundle to load. Swap this (or make it a URL param) to view a real
-// reconstruction once M2 produces one.
-const SCENE_URL = '/scenes/room2/scene.json';
+// Which scene bundle to load. Default is the 3DGS splat showcase; ?scene=<id>
+// switches (e.g. ?scene=vggt-room2 for the feed-forward VGGT reconstruction).
+const _sceneId = new URLSearchParams(location.search).get('scene') || 'room2';
+const SCENE_URL = `/scenes/${_sceneId}/scene.json`;
 
 const appEl = document.getElementById('app');
 const overlay = document.getElementById('overlay');
