@@ -1,0 +1,5 @@
+{
+  "id": "vggt-room2",
+  "name": "VGGT — 16 casual frames (no COLMAP)",
+  "assets": { "mesh": "model.glb" }
+}
