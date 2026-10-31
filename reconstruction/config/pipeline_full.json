@@ -21,7 +21,9 @@
     "method": "splatfacto",
     "max_iterations": 30000,
     "max_splats": 2000000,
-    "max_resolution": 1920
+    "max_resolution": 1600,
+    "export_every": 10000,
+    "subsample_frames": 2
   },
   "_tools_help": "Override tool paths per-machine via env vars (FFMPEG_BIN, COLMAP_BIN, BRUSH_BIN) or the 'tools' block below. Leave empty to use PATH. Do not commit machine-specific absolute paths.",
   "tools": {},
