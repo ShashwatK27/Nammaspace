@@ -1,0 +1,50 @@
+{
+  "id": "livingroom",
+  "name": "NammaSpace Living Room",
+  "description": "Living room reconstructed from a 4K smartphone capture (75s segment, COLMAP + 3D Gaussian Splatting). 219 frames, one clean model, 53k sparse points, ~369k splats.",
+  "coordinateSystem": "y-up",
+  "units": "arbitrary (COLMAP up-to-scale)",
+  "generatedFrom": {
+    "images": 219,
+    "points": 53019,
+    "upEstimation": "camera-plane PCA"
+  },
+  "transform": {
+    "quaternion": [
+      0.993148,
+      0.043093,
+      -0.10817,
+      0.009984
+    ]
+  },
+  "bounds": {
+    "min": [
+      -5.6,
+      -3.8,
+      -16.1
+    ],
+    "max": [
+      5.1,
+      2.5,
+      -2.1
+    ]
+  },
+  "spawn": {
+    "position": [
+      -0.227,
+      -0.022,
+      -0.299
+    ],
+    "yaw": 0.0
+  },
+  "player": {
+    "eyeHeight": -0.022,
+    "walkSpeed": 3.0,
+    "sprintMultiplier": 2.2,
+    "flyVertical": true
+  },
+  "assets": {
+    "mesh": null,
+    "splat": "splat/scene.ksplat"
+  }
+}
