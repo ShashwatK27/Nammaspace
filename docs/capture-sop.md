@@ -12,11 +12,18 @@ follow it and get a usable capture on the first try.
 ---
 
 ## 0. Principles (the "why")
-Structure-from-Motion + splatting needs, for every surface you want in the twin:
-1. **Multiple viewpoints** of that surface (≥3 angles) — one pass gives zero depth.
-2. **High overlap** between consecutive frames (60–80%).
-3. **Sharp, consistently-exposed** frames (no motion blur, no flicker).
-4. **Texture/parallax** — featureless walls, mirrors and glass are the enemies.
+Two things matter more than everything else combined: **sharp frames** and **parallax**.
+A blurry frame doesn't just blur one spot — the blur spreads through the whole
+reconstruction as haze and floaters, and it can't be recovered later. Parallax (the way
+near and far objects shift as you *move*) is what gives depth; panning on the spot gives
+none and the scene collapses into mush.
+
+So, for every surface you want in the twin:
+1. **Sharp frames above all** — fast shutter, no motion blur. Fewer sharp frames beat
+   many blurry ones.
+2. **Parallax — WALK, never pan.** Move your feet; don't rotate on the spot.
+3. **Multiple viewpoints** of each surface (≥3 angles) at **60–80% overlap**.
+4. **Texture** — featureless walls, mirrors and glass are the enemies.
 
 Everything below serves those four.
 
@@ -40,17 +47,30 @@ Everything below serves those four.
 | Setting | Value | Why |
 |---|---|---|
 | Mode | **Video** | steadier overlap than burst photos |
-| Resolution | **1080p min, 4K preferred** | detail = model fidelity |
-| Frame rate | 30–60 fps | we sample 2–4 fps later |
+| Resolution | **4K** (1080p only if you must) | detail = fidelity; 4K is a clear step up |
+| Frame rate | **30 fps** | we sample 2–4 fps later; 60 just wastes storage |
+| **Shutter speed** | **≥ 1/500 s, locked** | **the #1 rule — stops motion blur.** Sacrifice ISO (sensor noise is fine; blur is fatal) |
+| Bitrate / codec | **Max bitrate, H.265** | keep detail; ProRes is overkill (~10 GB/min) |
 | Exposure/Focus | **Locked** | no flicker / refocus blur |
 | Stabilization | On (standard) | avoid heavy "action/warp" modes |
-| Orientation | Either, **kept consistent** | don't rotate phone mid-capture |
+| Orientation | **Landscape**, kept consistent | don't rotate phone mid-capture |
+
+> The stock camera hides shutter speed and keeps changing it. For control, use a
+> **manual video app** that lets you **lock shutter ≥ 1/500 s** (Android: *mcpro24fps*,
+> *MotionCam*, or the phone's **Pro video** mode; iOS: *Blackmagic Camera*, free).
+> **Clean the lens first.** Use the **main** rear lens — avoid the ultra-wide (0.5×): its
+> distortion is harder for SfM and the rasterised splat.
 
 ## 3. Capture procedure (the walk)
+- **WALK, don't pan.** Move your feet through the space — never stand in one spot and
+  rotate. Panning gives no parallax and the reconstruction collapses. *Zoom with your feet.*
 - **Speed:** slow, steady walk. **Smooth turns only** — never whip the phone around
-  (abrupt motion = blur that breaks matching).
-- **Pattern:** walk slowly **along each wall**, then **cross through the centre**, then
-  **loop back to where you started** (loop closure helps alignment lock).
+  (abrupt motion = blur). Hold the phone **landscape, angled slightly** (not dead-straight)
+  — it generates parallax more efficiently.
+- **Pattern:** a gradual **spiral** gives the smoothest coverage. Walk slowly **along each
+  wall**, **cross through the centre**, orbit furniture, then **loop back the other way**
+  (loop closure reconnects the model — our COLMAP now uses it, so one walkthrough can
+  cover several rooms as a single scene).
 - **Cover every surface from ≥3 angles**, with **60–80% overlap** between views.
 - **Three heights — this is critical for a *complete* twin:**
   - **Low** (~0.8 m) — floor, furniture bases.
@@ -60,7 +80,11 @@ Everything below serves those four.
   > we only shot eye-level and down — the ceiling was never filmed, so there were no
   > splats there. **Deliberately tilt up and sweep the ceiling and wall-tops.**
 - **Orbit key objects** (desk, sofa, reception) — walk a small arc around them.
-- **Corners & doorways:** capture each from **two+ directions**.
+- **Corners & doorways:** capture each from **two+ directions**. Through a doorway,
+  slow almost to a stop and sweep so **many frames see *both* rooms at once** — that
+  overlap is what lets loop closure stitch the rooms into one model.
+- **Shoot a bit *beyond* the area you'll show.** If you capture only exactly what you want
+  viewers to see, the edges fall apart the moment they move past your path.
 
 ## 4. Hard surfaces (mitigate SfM failure)
 - **Mirrors / glossy floors:** never fill the frame with a reflection; shoot at oblique
@@ -93,8 +117,11 @@ Same room, two captures through the identical pipeline:
 |---|---|
 | WhatsApp-shared, 848×478, fast motion | **132 / 225** frames registered, **3 fragmented models**, 4.4k points — patchy, unrecognizable |
 | **This SOP:** 4K, 3 min, slow, looped | **351 / 351** frames registered, **1 clean model**, **111k points** — complete, recognizable room |
+| 4K multi-room walkthrough, **sequential-only** matching | 620 / 659 registered but **6 fragmented models** — doorways broke the chain |
+| Same walkthrough, **+ vocab-tree loop closure** | **579 / 667 in ONE model** — the whole apartment reconnected as a single scene |
 
-The only change was following the SOP. Resolution + coverage + overlap did it.
+The only change was following the SOP (resolution + coverage + overlap), plus enabling
+**loop closure** in COLMAP so multi-room walkthroughs stay one connected model.
 
 ---
 

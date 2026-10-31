@@ -1,0 +1,40 @@
+{
+  "project": "nammaspace",
+  "preprocess": {
+    "fps": 2,
+    "qscale": 2,
+    "dedupe": true,
+    "blur_drop_percentile": 3,
+    "max_width": 1920
+  },
+  "colmap": {
+    "matcher": "sequential",
+    "camera_model": "OPENCV",
+    "single_camera": true,
+    "use_gpu": true,
+    "overlap": 20,
+    "loop_detection": true,
+    "vocab_tree_path": ""
+  },
+  "train": {
+    "backend": "brush",
+    "method": "splatfacto",
+    "max_iterations": 30000,
+    "max_splats": 2000000,
+    "max_resolution": 1920
+  },
+  "_tools_help": "Override tool paths per-machine via env vars (FFMPEG_BIN, COLMAP_BIN, BRUSH_BIN) or the 'tools' block below. Leave empty to use PATH. Do not commit machine-specific absolute paths.",
+  "tools": {},
+  "scene": {
+    "id": "scene-001",
+    "name": "NammaSpace Scene 001",
+    "up_axis": "auto",
+    "eye_height": 1.6,
+    "walk_speed": 3.2,
+    "sprint_multiplier": 2.2,
+    "bounds_percentile": [
+      2,
+      98
+    ]
+  }
+}

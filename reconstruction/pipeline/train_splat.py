@@ -29,11 +29,19 @@ def _commands(backend: str, dataset: str, out: str, iters: int, full_cfg: dict) 
     model = os.path.join(dataset, "sparse", "0")
     if backend == "brush":
         brush = resolve_tool("brush_app", full_cfg, "BRUSH_BIN")
-        return [[brush, dataset,
-                 "--total-steps", str(iters),
-                 "--export-every", str(iters),
-                 "--export-path", out,
-                 "--export-name", "scene.ply"]]
+        tcfg = full_cfg.get("train", {})
+        cmd = [brush, dataset,
+               "--total-steps", str(iters),
+               "--export-every", str(iters),
+               "--export-path", out,
+               "--export-name", "scene.ply"]
+        # Optional Brush knobs: cap splats / training resolution to bound VRAM on
+        # small GPUs (large multi-room scenes can otherwise OOM on 4 GB).
+        if tcfg.get("max_splats"):
+            cmd += ["--max-splats", str(tcfg["max_splats"])]
+        if tcfg.get("max_resolution"):
+            cmd += ["--max-resolution", str(tcfg["max_resolution"])]
+        return [cmd]
     if backend == "nerfstudio":
         processed = os.path.join(out, "nerfstudio")
         return [
