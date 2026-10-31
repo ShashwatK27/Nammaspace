@@ -1,7 +1,7 @@
 {
   "id": "apartment",
   "name": "NammaSpace Apartment",
-  "description": "Largest connected region of a ~5.6 min handheld smartphone walkthrough (COLMAP + 3D Gaussian Splatting). 341 frames, 166k sparse points, ~485k splats.",
+  "description": "Largest connected region of a ~5.6 min handheld smartphone walkthrough (COLMAP + 3D Gaussian Splatting). 341 frames, 166k sparse points, ~379k splats (floater-cleaned).",
   "coordinateSystem": "y-up",
   "units": "arbitrary (COLMAP up-to-scale)",
   "generatedFrom": {
