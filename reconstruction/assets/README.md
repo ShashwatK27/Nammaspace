@@ -1,18 +1,17 @@
 # Reconstruction assets
 
-## Vocabulary tree (for COLMAP loop closure)
+## Vocabulary tree (COLMAP loop closure)
 
 `run_colmap.py` enables vocabulary-tree **loop detection** on the sequential
-matcher so that revisited areas and adjacent rooms reconnect into a single model
-instead of fragmenting. It needs a vocab tree, which is not committed (≈15 MB).
+matcher so revisited areas and adjacent rooms reconnect into a single model
+instead of fragmenting.
 
-Download it once:
+**No manual download is needed.** COLMAP 3.12+ (faiss-based) **auto-downloads and
+caches** a compatible vocab tree the first time loop detection runs, as long as
+no explicit tree path is given. That's why `colmap.vocab_tree_path` is empty in
+`config/pipeline.json`.
 
-```bash
-curl -L -o reconstruction/assets/vocab_tree_flickr100K_words32K.bin \
-  https://demuc.de/colmap/vocab_tree_flickr100K_words32K.bin
-```
-
-Path is configurable via `colmap.vocab_tree_path` in `config/pipeline.json`
-(or the `COLMAP_VOCAB_TREE` env). If the file is missing, matching falls back
-to sequential-only (no loop closure) with a warning.
+Only set `colmap.vocab_tree_path` if you have a **faiss-format** tree you want to
+use offline. Legacy FLANN trees (e.g. the old `vocab_tree_flickr100K_words32K.bin`
+from demuc.de) are **not** compatible with faiss builds and will error — don't
+use them. `*.bin` here is gitignored.

@@ -68,38 +68,57 @@ def run_colmap(frames: str, out: str, full_cfg: dict, run: bool) -> int:
     if matcher_name == "sequential":
         match_cmd += ["--SequentialMatching.overlap", str(cfg.get("overlap", 20)),
                       "--SequentialMatching.quadratic_overlap", "1"]
-        vocab = cfg.get("vocab_tree_path",
-                        "reconstruction/assets/vocab_tree_flickr100K_words32K.bin")
-        if cfg.get("loop_detection", True) and os.path.exists(vocab):
-            match_cmd += ["--SequentialMatching.loop_detection", "1",
-                          "--SequentialMatching.vocab_tree_path", vocab]
-        elif cfg.get("loop_detection", True):
-            print(f"[run_colmap] loop_detection requested but vocab tree not found at "
-                  f"{vocab}; continuing without it (may fragment).", file=sys.stderr)
+        if cfg.get("loop_detection", True):
+            match_cmd += ["--SequentialMatching.loop_detection", "1"]
+            # COLMAP 3.12+ (faiss) auto-downloads and caches a compatible vocab
+            # tree when none is given. Only pass an explicit path if the user
+            # configured a faiss-format tree; a legacy FLANN tree will error.
+            vocab = cfg.get("vocab_tree_path", "")
+            if vocab and os.path.exists(vocab):
+                match_cmd += ["--SequentialMatching.vocab_tree_path", vocab]
 
-    steps = [
-        [colmap, "feature_extractor", "--database_path", db, "--image_path", frames,
-         "--ImageReader.camera_model", model, "--ImageReader.single_camera", single,
-         "--FeatureExtraction.use_gpu", gpu],
-        match_cmd,
-        [colmap, "mapper", "--database_path", db, "--image_path", frames,
-         "--output_path", sparse],
-    ]
+    extract_cmd = [colmap, "feature_extractor", "--database_path", db, "--image_path", frames,
+                   "--ImageReader.camera_model", model, "--ImageReader.single_camera", single,
+                   "--FeatureExtraction.use_gpu", gpu]
+    mapper_cmd = [colmap, "mapper", "--database_path", db, "--image_path", frames,
+                  "--output_path", sparse]
 
-    if run:
-        os.makedirs(sparse, exist_ok=True)
-    for cmd in steps:
-        print("[run_colmap]", " ".join(cmd))
-        if not run:
-            continue
-        rc = subprocess.call(cmd)
-        if rc != 0:
-            print(f"[run_colmap] step failed: {cmd[1]}", file=sys.stderr)
-            return rc
-
+    print("[run_colmap]", " ".join(extract_cmd))
+    print("[run_colmap]", " ".join(match_cmd))
+    print("[run_colmap]", " ".join(mapper_cmd))
     if not run:
         print("[run_colmap] dry-run (pass --run to execute)")
         return 0
+
+    os.makedirs(sparse, exist_ok=True)
+    if subprocess.call(extract_cmd) != 0:
+        print("[run_colmap] step failed: feature_extractor", file=sys.stderr)
+        return 1
+
+    if subprocess.call(match_cmd) != 0:
+        # Loop closure needs a faiss vocab tree; if it's missing/legacy/incompatible
+        # the matcher aborts. Fall back to plain sequential matching so a vocab-tree
+        # problem degrades connectivity instead of killing the whole pipeline.
+        if "--SequentialMatching.loop_detection" in match_cmd:
+            print("[run_colmap] matcher failed with loop closure; retrying "
+                  "sequential-only (no vocab tree). Expect more fragmentation.",
+                  file=sys.stderr)
+            i = match_cmd.index("--SequentialMatching.loop_detection")
+            fallback = [a for j, a in enumerate(match_cmd)
+                        if j not in (i, i + 1)]
+            if "--SequentialMatching.vocab_tree_path" in fallback:
+                k = fallback.index("--SequentialMatching.vocab_tree_path")
+                fallback = [a for j, a in enumerate(fallback) if j not in (k, k + 1)]
+            if subprocess.call(fallback) != 0:
+                print("[run_colmap] step failed: sequential_matcher", file=sys.stderr)
+                return 1
+        else:
+            print("[run_colmap] step failed: sequential_matcher", file=sys.stderr)
+            return 1
+
+    if subprocess.call(mapper_cmd) != 0:
+        print("[run_colmap] step failed: mapper", file=sys.stderr)
+        return 1
 
     _promote_largest_model(sparse)
     rc = subprocess.call([colmap, "model_converter",

@@ -14,7 +14,7 @@
     "use_gpu": true,
     "overlap": 20,
     "loop_detection": true,
-    "vocab_tree_path": "reconstruction/assets/vocab_tree_flickr100K_words32K.bin"
+    "vocab_tree_path": ""
   },
   "train": {
     "backend": "brush",
