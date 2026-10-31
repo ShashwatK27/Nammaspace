@@ -49,9 +49,14 @@ export async function loadScene(sceneUrl) {
     const fmt = assets.splat.endsWith('.ksplat') ? GaussianSplats3D.SceneFormat.KSplat
       : assets.splat.endsWith('.splat') ? GaussianSplats3D.SceneFormat.Splat
         : GaussianSplats3D.SceneFormat.Ply;
+    // View-dependent colour (specular/gloss) via spherical harmonics. Brush trains
+    // SH degree 3; keeping it needs the .ksplat built with SH AND this set > 0.
+    // Per-scene opt-in (default 0) since SH costs file size + render time.
+    const shDegree = (config.render && config.render.sphericalHarmonicsDegree) || 0;
     const dropIn = new GaussianSplats3D.DropInViewer({
       gpuAcceleratedSort: false,
       sharedMemoryForWorkers: typeof SharedArrayBuffer !== 'undefined',
+      sphericalHarmonicsDegree: shDegree,
     });
     try {
       await dropIn.addSplatScene(baseUrl + assets.splat, {
