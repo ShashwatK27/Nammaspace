@@ -32,6 +32,18 @@ const hudSplat = document.getElementById('hud-splat');
 const hudCam = document.getElementById('hud-cam');
 const hudFps = document.getElementById('hud-fps');
 
+// Scene picker on the entry overlay — switch scenes by reloading with ?scene=<id>.
+const scenePicker = document.getElementById('scene-picker');
+if (scenePicker) {
+  scenePicker.value = _sceneId;
+  scenePicker.addEventListener('click', (e) => e.stopPropagation()); // don't trigger pointer-lock
+  scenePicker.addEventListener('change', () => {
+    const u = new URL(location.href);
+    u.searchParams.set('scene', scenePicker.value);
+    location.href = u.toString();
+  });
+}
+
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -56,6 +68,9 @@ async function init() {
   controls = new FirstPersonControls(camera, renderer.domElement, config);
   scene.add(controls.object);
 
+  // Debug handle for headless screenshots / inspection.
+  window.__ns = { THREE, scene, camera, renderer, root, config, debug, freeze: false };
+
   hudScene.textContent = `scene: ${config.name ?? config.id ?? 'scene'}`;
 
   overlay.addEventListener('click', () => controls.lock());
@@ -73,7 +88,7 @@ let fpsAccum = 0, fpsFrames = 0, fpsTimer = 0;
 function animate() {
   requestAnimationFrame(animate);
   const dt = Math.min(clock.getDelta(), 0.1); // clamp to avoid jumps on tab refocus
-  if (controls) controls.update(dt);
+  if (controls && !(window.__ns && window.__ns.freeze)) controls.update(dt);
   renderer.render(scene, camera);
 
   fpsAccum += dt; fpsFrames++; fpsTimer += dt;

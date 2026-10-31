@@ -26,6 +26,12 @@
         background: #151a20; font-size: 15px;
       }
       #overlay .keys { font-size: 13px; color: #9aa7b4; line-height: 1.8; }
+      #scene-row { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+      #scene-row label { font-size: 12px; color: #9aa7b4; letter-spacing: 0.4px; text-transform: uppercase; }
+      #scene-picker {
+        padding: 9px 14px; border-radius: 10px; border: 1px solid #3a4552;
+        background: #151a20; color: #e7ecf2; font-size: 14px; cursor: pointer; max-width: 92vw;
+      }
       kbd {
         background: #1c232b; border: 1px solid #333e49; border-bottom-width: 2px;
         border-radius: 5px; padding: 1px 7px; font-size: 12px; color: #cdd6df;
@@ -58,6 +64,15 @@
     </div>
     <div id="overlay">
       <h1>NammaSpace &mdash; Desktop Free Roaming</h1>
+      <div id="scene-row">
+        <label for="scene-picker">Scene</label>
+        <select id="scene-picker" title="Choose a scene">
+          <option value="room2">Room &mdash; 3DGS splat (default)</option>
+          <option value="apartment">Apartment &middot; Room A &mdash; large 3DGS</option>
+          <option value="apartment2">Apartment &middot; Room B &mdash; 3DGS</option>
+          <option value="vggt-room2">Room &mdash; VGGT feed-forward (points)</option>
+        </select>
+      </div>
       <div class="cta">Click to enter &amp; walk around</div>
       <div class="keys">
         <kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> move &nbsp;·&nbsp;

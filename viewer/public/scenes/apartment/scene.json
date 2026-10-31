@@ -1,0 +1,50 @@
+{
+  "id": "apartment",
+  "name": "NammaSpace Apartment",
+  "description": "Largest connected region of a ~5.6 min handheld smartphone walkthrough (COLMAP + 3D Gaussian Splatting). 341 frames, 166k sparse points, ~485k splats.",
+  "coordinateSystem": "y-up",
+  "units": "arbitrary (COLMAP up-to-scale)",
+  "generatedFrom": {
+    "images": 341,
+    "points": 166167,
+    "upEstimation": "camera-plane PCA"
+  },
+  "transform": {
+    "quaternion": [
+      0.634448,
+      -0.302808,
+      0.688406,
+      0.178551
+    ]
+  },
+  "bounds": {
+    "min": [
+      -8.3,
+      -4.6,
+      -9.9
+    ],
+    "max": [
+      8.0,
+      5.0,
+      6.6
+    ]
+  },
+  "spawn": {
+    "position": [
+      0.161,
+      -0.078,
+      0.144
+    ],
+    "yaw": 4.7124
+  },
+  "player": {
+    "eyeHeight": -0.078,
+    "walkSpeed": 3.0,
+    "sprintMultiplier": 2.2,
+    "flyVertical": true
+  },
+  "assets": {
+    "mesh": null,
+    "splat": "splat/scene.ksplat"
+  }
+}
