@@ -30,9 +30,8 @@ Everything below serves those four.
 ---
 
 ## 1. Pre-capture checklist (2 minutes, do every time)
-- [ ] **Resolution 1080p or 4K.** Phone's native camera app. *(Our first try was a
-      WhatsApp-shared clip silently recompressed to 848×478 → it reconstructed poorly.
-      See §6 for transfer.)*
+- [ ] **Resolution 1080p or 4K.** Phone's native camera app. *(A chat-app-shared clip
+      gets silently recompressed to ~480p and reconstructs poorly — see §6 for transfer.)*
 - [ ] **Lock exposure & focus (AE/AF lock)** — tap-and-hold on a mid-brightness
       surface until it locks. Prevents frame-to-frame brightness flicker and refocus blur.
 - [ ] **Turn on all lights; open or fully close curtains** — bright, even, diffuse
@@ -76,9 +75,9 @@ Everything below serves those four.
   - **Low** (~0.8 m) — floor, furniture bases.
   - **Mid** (~1.4 m) — eye level, the main pass.
   - **High / tilt up** (~1.8 m, angled upward) — **upper walls and CEILING.**
-  > ⚠️ *Lesson learned:* our best capture still rendered a **black upper half** because
-  > we only shot eye-level and down — the ceiling was never filmed, so there were no
-  > splats there. **Deliberately tilt up and sweep the ceiling and wall-tops.**
+  > ⚠️ *Why this matters:* if you only shoot eye-level and down, the ceiling is never
+  > filmed, so it has no splats and renders as a gap. **Deliberately tilt up and sweep
+  > the ceiling and wall-tops.**
 - **Orbit key objects** (desk, sofa, reception) — walk a small arc around them.
 - **Corners & doorways:** capture each from **two+ directions**. Through a doorway,
   slow almost to a stop and sweep so **many frames see *both* rooms at once** — that
