@@ -53,6 +53,8 @@ def main(argv=None):
     ap.add_argument("--scene-id", required=True)
     ap.add_argument("--config", default="reconstruction/config/pipeline.json")
     ap.add_argument("--stage", choices=STAGES + ["all"], default="all")
+    ap.add_argument("--start", help="optional trim start (seconds or HH:MM:SS) to isolate one room from a walkthrough")
+    ap.add_argument("--duration", help="optional trim duration (seconds or HH:MM:SS)")
     ap.add_argument("--run", action="store_true", help="execute (default: dry-run)")
     args = ap.parse_args(argv)
 
@@ -66,8 +68,12 @@ def main(argv=None):
     stages = STAGES if args.stage == "all" else [args.stage]
 
     if "frames" in stages:
-        if _py("reconstruction/preprocessing/extract_frames.py",
-               ["--video", args.video, "--out", images, "--config", args.config], args.run):
+        frame_args = ["--video", args.video, "--out", images, "--config", args.config]
+        if args.start is not None:
+            frame_args += ["--start", args.start]
+        if args.duration is not None:
+            frame_args += ["--duration", args.duration]
+        if _py("reconstruction/preprocessing/extract_frames.py", frame_args, args.run):
             return 1
     if "colmap" in stages:
         if _py("reconstruction/pipeline/run_colmap.py",

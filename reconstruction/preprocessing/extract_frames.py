@@ -2,6 +2,12 @@
 
     python extract_frames.py --video data/raw/room.mp4 --out data/processed/scene-001/frames
 
+For a single-room capture, feed the whole video: fps sampling + mpdecimate + the
+blur filter keep a sharp, non-redundant subset automatically. To isolate one room
+from a longer multi-room walkthrough, trim a segment with --start/--duration:
+
+    python extract_frames.py --video walkthrough.mp4 --out .../frames --start 95 --duration 75
+
 Defaults come from reconstruction/config/pipeline.json ('preprocess' block).
 Requires ffmpeg on PATH. Use --run to actually execute (default prints the plan).
 """
@@ -16,13 +22,18 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."
 from tools import load_config, resolve_tool  # noqa: E402
 
 
-def extract(video: str, out_dir: str, full_cfg: dict, run: bool) -> int:
+def extract(video: str, out_dir: str, full_cfg: dict, run: bool,
+            start: str | None = None, duration: str | None = None) -> int:
     cfg = full_cfg.get("preprocess", {})
     ffmpeg = resolve_tool("ffmpeg", full_cfg, "FFMPEG_BIN")
     fps = cfg.get("fps", 2)
     qscale = cfg.get("qscale", 2)
     dedupe = cfg.get("dedupe", True)
     max_width = cfg.get("max_width")
+    # Optional trim (seconds or HH:MM:SS) to isolate one room/segment from a longer
+    # walkthrough. CLI args win over the config 'preprocess' block.
+    start = start if start is not None else cfg.get("start")
+    duration = duration if duration is not None else cfg.get("duration")
     os.makedirs(out_dir, exist_ok=True)
 
     # fps -> optional downscale (only if larger than max_width) -> dedupe.
@@ -31,8 +42,14 @@ def extract(video: str, out_dir: str, full_cfg: dict, run: bool) -> int:
         vf += f",scale='min(iw,{max_width})':-2"
     if dedupe:
         vf += ",mpdecimate"
-    cmd = [ffmpeg, "-i", video, "-vf", vf, "-qscale:v", str(qscale),
-           "-fps_mode", "vfr", os.path.join(out_dir, "frame_%05d.jpg")]
+    cmd = [ffmpeg]
+    if start is not None:
+        cmd += ["-ss", str(start)]          # seek before -i (fast)
+    cmd += ["-i", video]
+    if duration is not None:
+        cmd += ["-t", str(duration)]
+    cmd += ["-vf", vf, "-qscale:v", str(qscale),
+            "-fps_mode", "vfr", os.path.join(out_dir, "frame_%05d.jpg")]
 
     print("[extract_frames]", " ".join(cmd))
     if not run:
@@ -70,9 +87,12 @@ def main(argv=None):
     ap.add_argument("--video", required=True)
     ap.add_argument("--out", required=True)
     ap.add_argument("--config", default="reconstruction/config/pipeline.json")
+    ap.add_argument("--start", help="optional trim start (seconds or HH:MM:SS) to isolate a segment")
+    ap.add_argument("--duration", help="optional trim duration (seconds or HH:MM:SS)")
     ap.add_argument("--run", action="store_true", help="execute (default: dry-run)")
     args = ap.parse_args(argv)
-    return extract(args.video, args.out, load_config(args.config), args.run)
+    return extract(args.video, args.out, load_config(args.config), args.run,
+                   args.start, args.duration)
 
 
 if __name__ == "__main__":
