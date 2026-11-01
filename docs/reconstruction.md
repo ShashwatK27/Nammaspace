@@ -1,4 +1,4 @@
-# Reconstruction (plan — implemented in M2–M4)
+# Reconstruction — Pipeline & Decisions
 
 ## Direction
 
@@ -53,17 +53,19 @@ scene / coordinate frame** — the placeholder path in `viewer/src/sceneLoader.j
 (mature, exposes the Three camera so our `FirstPersonControls` work unchanged;
 native KSplat). Benchmark before final lock.
 
-## Benchmark plan (M4)
+## Results (M4 — locked)
 
-Run on the **same** real capture, compare 2 candidates (NeRF dropped up front:
-heavier browser cost, superseded by 3DGS):
+Evaluated on the same real smartphone capture. NeRF was dropped up front (heavier
+browser cost, superseded by 3DGS). Two backends run behind one scene bundle:
 
-| Method | Processing time | Geometry | Visual | Output size | Browser FPS | Failures |
-|--------|-----------------|----------|--------|-------------|-------------|----------|
-| 3D Gaussian Splatting | | | | | | |
-| COLMAP MVS mesh | | | | | | |
+| Backend | Processing | Geometry | Visual | Web asset | Browser | Notes |
+|---------|-----------|----------|--------|-----------|---------|-------|
+| **3D Gaussian Splatting** (primary) | COLMAP SfM (~16 min) + Brush 30k steps | camera poses + sparse cloud → splats | photorealistic | 7.1 MB `.ksplat` (~10× from `.ply`) | ~60 FPS at ~300k splats | needs the capture SOP; up-to-scale |
+| **VGGT** (feed-forward) | single forward pass, seconds, no SfM | posed colored point cloud | lower (point cloud) | `.glb` | ~60 FPS | robust to casual / low-overlap video |
 
-Then lock ONE primary pipeline and justify it.
+**Locked:** 3D Gaussian Splatting is the primary backend for photorealistic free-roam;
+VGGT is the fast, robust path for casual input. Both emit the same scene bundle, so the
+viewer is identical between them.
 
 ## Hardware
 
