@@ -22,7 +22,8 @@ So, for every surface you want in the twin:
 1. **Sharp frames above all** — fast shutter, no motion blur. Fewer sharp frames beat
    many blurry ones.
 2. **Parallax — WALK, never pan.** Move your feet; don't rotate on the spot.
-3. **Multiple viewpoints** of each surface (≥3 angles) at **60–80% overlap**.
+3. **Multiple viewpoints** of each surface (≥3 angles) at **70–80% overlap** between
+   consecutive frames (70% is the floor, 80% is better — this is what lets SfM solve poses).
 4. **Texture** — featureless walls, mirrors and glass are the enemies.
 
 Everything below serves those four.
@@ -78,7 +79,11 @@ Everything below serves those four.
   > ⚠️ *Why this matters:* if you only shoot eye-level and down, the ceiling is never
   > filmed, so it has no splats and renders as a gap. **Deliberately tilt up and sweep
   > the ceiling and wall-tops.**
-- **Orbit key objects** (desk, sofa, reception) — walk a small arc around them.
+- **Orbit key objects** (desk, sofa, reception) — walk a small arc around them. When a full
+  circle is blocked by a wall or furniture, use a **concave half-shell arc**: move along a
+  curve while keeping the camera pointed at the object; shoot the area with **several arcs at
+  different heights**. **Avoid convex paths** (camera pointing *outward* from the arc) — they
+  make 70–80% overlap much harder to hold and often break the solve.
 - **Corners & doorways:** capture each from **two+ directions**. Through a doorway,
   slow almost to a stop and sweep so **many frames see *both* rooms at once** — that
   overlap is what lets loop closure stitch the rooms into one model.
@@ -87,14 +92,30 @@ Everything below serves those four.
 
 ## 4. Hard surfaces (mitigate SfM failure)
 - **Mirrors / glossy floors:** never fill the frame with a reflection; shoot at oblique
-  angles.
+  angles. *Flat* mirrors can actually reconstruct cleanly (the reflection behaves as a
+  consistent "mirror world") as long as two mirrors' reflections don't overlap; **curved
+  reflective surfaces fail** — expect to clean those by hand. A **polarizing filter** cuts
+  glare if your rig takes one.
 - **Windows / glass:** blinds partly closed or grazing angles; don't rely on glass for features.
-- **Blank / textureless walls:** move slowly and keep a **corner or edge in frame** as a
-  feature anchor; sweep adjacent textured areas.
+- **Blank / textureless walls & ceilings:** these are the hardest case — with no features to
+  match they reconstruct as blurry "clouds" or holes. Move slowly, keep a **corner or edge
+  in frame** as a feature anchor, shoot them from **many angles**, and sweep adjacent
+  textured areas. Plan on some **manual cleanup** of walls/ceilings in editing — even
+  professional whole-house captures accept this.
 
-## 5. Duration
+## 5. Duration & frame count
 - **~1.5–3 minutes per room** → ~300 sharp frames after sampling. (Below ~150 frames
   tends to fragment; see validation.)
+- **Target frames by scene size** (industry rule of thumb): a single **room ≈ 300–900**
+  frames; a **multi-room / whole-floor walkthrough ≈ 1000–2000**. More coverage = denser
+  twin — *"when in doubt, shoot more."*
+- **Ceiling on one pass:** SfM slows sharply past **~5000 images** and can run out of
+  memory. A **whole apartment/multiple floors is split into sections** and reconstructed
+  separately, then recombined (recombining is genuinely hard — keep generous **overlap at
+  the seams/doorways** so sections share enough views to align).
+- **From video:** sample **every 2nd–5th frame** depending on walk speed, then **drop blurry
+  frames** (our pipeline auto-drops the blurriest ~3%; the *Sharp Frames* tool —
+  `sharp-frames.reflct.app` — does the same if selecting stills by hand).
 
 ## 6. File handling (don't lose your resolution!)
 - **Transfer the ORIGINAL file** — **never send the video over WhatsApp/chat as a
@@ -121,6 +142,33 @@ Same room, two captures through the identical pipeline:
 
 The only change was following the SOP (resolution + coverage + overlap), plus enabling
 **loop closure** in COLMAP so multi-room walkthroughs stay one connected model.
+
+---
+
+## 9. External references (organizer-shared)
+This SOP is corroborated by the two capture guides the organizers circulated, plus the
+pipeline resources from Round 1. Our own measured results (§8) agree with all of them.
+- **PlayCanvas — *Taking Photos for Gaussian Splatting***
+  (`developer.playcanvas.com/user-manual/gaussian-splatting/creating/taking-photos/`):
+  shutter **≥ 1/125 s** handheld, **ISO as low as possible**, **f/8–f/11** (deep depth of
+  field — everything in focus), manual focus/exposure **locked** across the whole session,
+  **4K / 60 fps+** video at max bitrate, **70–80% overlap**, **15–30°** between viewpoints,
+  multiple elevations; overcast/diffuse light; avoid motion blur, reflective surfaces and
+  moving objects.
+- **Magnopus — *Lessons in Gaussian Splats from the Allee Willis House***
+  (`magnopus.com/blog/lessons-in-gaussian-splats-from-the-allee-willis-house`): **overlap
+  ≥ 70% (80% better) is the single biggest success factor**; move slowly, no motion blur
+  (noise is tolerable — they reconstructed at **ISO 40,000**; blur is not); full
+  circles/domes best, **concave half-shell arcs** where blocked, avoid convex paths;
+  **flat mirrors OK, curved reflectors fail**; **white walls reconstruct as clouds** →
+  many angles + manual cleanup; a **whole house is split into sections** and recombined;
+  turn off heavy stabilization (IBIS) and use a **polarizer** for reflections.
+
+> **Takeaway for NammaSpace:** every rule we already follow (sharp frames, walk-don't-pan,
+> 70–80% overlap, loop closure, three heights, textureless-wall mitigation) is independently
+> confirmed by both sources. The one thing neither solves is **seamless multi-room joining** —
+> which is exactly why our COLMAP **loop closure** (one connected walkthrough) is a genuine
+> advantage over split-and-recombine workflows.
 
 ---
 
